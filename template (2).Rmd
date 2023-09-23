@@ -1,6 +1,8 @@
 ---
 title: "P8105_hw1_mcm2335"
-output: html_document
+author: Madeleine McGuinness
+date: 09/23/2023
+output: github_document
 ---
 
 I'm an R Markdown document! 
