@@ -5,19 +5,111 @@ date: 09/23/2023
 output: github_document
 ---
 
-I'm an R Markdown document! 
-
-# Section 1
-
-Here's a **code chunk** that samples from 
-a _normal distribution_:
+# Problem 1
+## This problem focuses on the use of inline R code, plotting, and the behavior of ggplot for variables of different types.
 
 ```{r}
-samp = rnorm(100)
-length(samp)
+#step 1: load packages
+
+library(tidyverse)
+library(moderndive)
+library(dplyr)
+
+#step 2: load "early_janurary_weather" dataset
+
+data("early_january_weather") # load the data
+
+#step 3: describe the data and get mean temp
+
+names(early_january_weather) # this function gathers the names of all variables in the dataframe
+
+view(early_january_weather) # this functions pulls up the entire table in another tab
+
+nrow(early_january_weather) # this functions pulls up the number of rows in the dataframe
+
+ncol(early_january_weather) # this functions pulls up the number of columns in the dataframe
+
+head(early_january_weather) # this function pulls up the first 6 rows in the table
+
+tail(early_january_weather) # this function fulls up the last 6 rows in the table
+
+skimr::skim(early_january_weather)
+
+mean(early_january_weather$temp) # this functions takes the mean of the temperature variable
+
+#step 4: create scatterplot of temp(y) vs time_hour(x) and save
+
+early_january_temperature_by_time <- early_january_weather %>% 
+  ggplot(aes(x = time_hour, y = temp, color = humid)) + 
+  geom_point(alpha = .5)
+
+ggsave("early_january_temperature_by_time.pdf")
+
 ```
 
-# Section 2
+## Problem 1 Answers 
 
-I can take the mean of the sample, too!
-The mean is `r mean(samp)`.
+Looking at the environment panel, the dataset "early_janurary_weather" has 15 variables (origin, year, month, day, hour, temp, dewp, humid, wind_dir, windspeed, precip, pressure, visib, and time_hour) with 358 observations each. Using the 'nrow' and 'ncol' functions, it is confirmed that there are 15 columns and 358 rows in the dataframe.
+
+By viewing the data with the view(), head(), and tail() functions, it appears that this data includes climate measure readings taken every hour at one particular weather station (EWR) from January 1st through January 15th of 2013. The skimr::skim function tells us that there is one character variable (origin), 13 integer or numeric variables (year, month, day, hour, temp, dewp, humid, wind_dir, wind_speed, wind_gust, precip, pressure, and visib) and one POSIXct variable (time_hour) that includes the date and time of each climate/weather reading. There are no group variables. There is missingness in the wind_gust (308 NAs) and pressure (38 NAs) columns, and it appears that every row with an NA value for pressure also has an NA value for wind_gust. 
+
+The mean function 'mean(early_january_weather$temp)' tells us that the mean temperature using hourly readings from January 1st through 15th of 2013 at the EWR station was 39.58 degrees.
+
+In the scatterplot created of temp(y) vs time_hour(x), we can see that the daily temperature as a trend increased gradually from January 1st through 15th, although there is hourly variation as the temperature fluctuates from highs to lows each day. By setting the color of the points in the scatterplot to the 'humid' variable, we can also see that there is an overall upward trend in humidity as the average temperature in January increases from January 1st to January 15th.
+
+# Problem 2
+## This problem is intended to emphasize variable types and introduce coercion; some awareness of how R treats numeric, character, and factor variables is necessary for working with these data types in practice.
+
+```{r}
+# Instructions: Create a data frame comprised of:
+#a random sample of size 10 from a standard Normal distribution
+#a logical vector indicating whether elements of the sample are greater than 0
+#a character vector of length 10
+#a factor vector of length 10, with 3 different factor “levels”
+
+# step 1: set seed to make sure sampling is consistent when run multiple times
+set.seed(123)
+
+#step 2: create dataframe
+numeric_values <- rnorm(10)
+
+#step 3: create logical vector
+logical_vector <- numeric_values > 0
+
+#step 4: character vector
+character_vector <- vector("character", length = 10)
+
+#step 5: factor vector
+factor_vector <- factor(c("a", "b", "c", "a", "b", "c", "a", "b", "c", "a"))
+
+#step 6: create the dataframe
+df <- tibble(numeric_values, logical_vector, character_vector, factor_vector)
+
+#step 7: take the means of each variable
+mean_numeric <- mean(df$numeric_values) #0.0746
+
+mean_logical <- mean(df$logical_vector) #0.5 (proportion of True to False)
+
+mean_character <- mean(df$character_vector) # returns NA because not numeric or logical
+
+mean_factor <- mean(df$factor_vector) # returns NA because not numeric or logical
+```
+
+```{r, echo=TRUE, results='hide'}
+#step 8: take the means of each non-numeric variable as numeric
+logical_as_numeric <- as.numeric(logical_vector)
+
+mean(logical_as_numeric) # returns 0.5, same as before
+
+character_as_numeric <- as.numeric(character_vector) # returns all NAs
+
+mean(character_as_numeric) # mean is NA
+
+factor_as_numeric <- as.numeric(factor_vector) # converts factors into their levels
+
+mean(factor_as_numeric) # returns numeric mean of factors as their levels, 1.9
+```
+
+## Problem 2 Answers
+
+I was able to take the mean of both the numeric and logical vectors. The mean of my numeric vector was the average of each numeric value in the vector. The mean of the logical vector treated each 'False' value as '0' and each 'True' value as '1' and because there was an equal distribution of 0s and 1s in the vector, returned a mean of 0.5. I was not able to take the mean of the character vector and the factor vectors and both returned 'NA' as the result. However, when I converted the factor vector to numeric, each factor was assigned an integer that corresponded to its factor level, and I was able to get a numeric mean. Treating my character vector as numeric still resulted in a mean of 'NA'. When converting my logical vector to numeric, the 'False' variables were transformed to '0' and the 'True' variables to '1', and I got the same mean result of '0.5' as before.
